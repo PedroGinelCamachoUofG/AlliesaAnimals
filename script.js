@@ -124,15 +124,15 @@ window.addEventListener('load', function(){
 
     class Animal {
         constructor(loop, name){
-            this.loop = loop
-            this.collisionX =  (Math.random() * (this.loop.width));
-            this.collisionY =  (Math.random() * (this.loop.height));
-            this.collisionRadius = 50;
-            this.image =  document.getElementById('animals');// use name to distinguish between different animal files
+            this.loop = loop;
             this.frameWidth = 250;//placeholder values
             this.frameHeight = 250;//placeholder values
             this.width = this.frameWidth;
             this.height = this.frameHeight;
+            this.collisionX =  (Math.random() * (this.loop.width - this.width) + this.width*0.5);
+            this.collisionY =  (Math.random() * (this.loop.height- this.height) + this.height*0.5);
+            this.collisionRadius = 50;
+            this.image =  document.getElementById('animals');// use name to distinguish between different animal files
             this.spriteX = this.collisionX - this.width * 0.5;
             this.spriteY = this.collisionY - this.height * 0.5;
             this.spriteWidth = 250;
