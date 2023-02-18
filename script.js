@@ -125,8 +125,8 @@ window.addEventListener('load', function(){
     class Animal {
         constructor(loop, name){
             this.loop = loop
-            this.collisionX =  Math.random() * this.loop.width;
-            this.collisionY =  Math.random() * this.loop.height;
+            this.collisionX =  (Math.random() * (this.loop.width));
+            this.collisionY =  (Math.random() * (this.loop.height));
             this.collisionRadius = 50;
             this.image =  document.getElementById('animals');// use name to distinguish between different animal files
             this.frameWidth = 250;//placeholder values
@@ -160,18 +160,18 @@ window.addEventListener('load', function(){
             this.spriteX =  this.collisionX - this.width * 0.5;
             this.spriteY =  this.collisionY - this.height * 0.5;
             // update to keep them in the screen 
-            if (this.spriteX + this.width < 0){
+            if (this.collisionX - this.width * 0.5 < 0){
                 // outside left of screen
                 this.speedX = -this.speedX;
-            } else if (this.spriteX + this.width > this.loop.width){
+            } else if (this.collisionX + this.width * 0.5 > this.loop.width){
                 // outside the right
                 this.speedX = -this.speedX;
-            } else if (this.spriteY + this.height > this.loop.height){
+            } else if (this.collisionY + this.height * 0.5 > this.loop.height){
                 // outside the top
-                this.speedY = - this.speedY;
-            } else if (this.spriteY + this.height < 0){
+                this.speedY = -this.speedY;
+            } else if (this.collisionY - this.height * 0.5 < 0){
                 // outsidde the bottom
-                this.speedY = - this.speedY;
+                this.speedY = -this.speedY;
             }
         }
     }
