@@ -7,12 +7,7 @@ window.addEventListener("load", function () {
   // issue is that the distance calculation was being super nonsensical
 
   class User {
-    loop: Loop;
-    positionX: number;
-    positionY: number;
-    isPressed: boolean;
-
-    constructor(loop: Loop) {
+    constructor(loop) {
       this.loop = loop;
       // mouse position
       this.positionX;
@@ -31,16 +26,7 @@ window.addEventListener("load", function () {
   }
 
   class Particle {
-    loop: Loop;
-    positionX: number;
-    positionY: number;
-    angle: number;
-    lifetime: number;
-    duration: number;
-    image: HTMLElement | null;
-    size: number;
-
-    constructor(loop: Loop, x: number, y: number, name: string) {
+    constructor(loop, x, y, name) {
       this.loop = loop;
       this.positionX = x;
       this.positionY = y;
@@ -64,16 +50,6 @@ window.addEventListener("load", function () {
   }
 
   class Loop {
-    width: number;
-    height: number;
-    fps: number;
-    timer: number;
-    interval: number;
-    user: User;
-    animals: Animal[];
-    numberOfAnimals: number;
-    particles: Particle[];
-
     constructor() {
       // occupy all screen
       this.width = window.innerWidth;
@@ -95,10 +71,9 @@ window.addEventListener("load", function () {
         this.user.positionX = e.pageX;
         this.user.positionY = e.pageY;
         this.user.isPressed = true;
-        let collided = this.checkCollision(this.animals[0], this.user);
-        console.table(collided);
+        let distance = this.checkCollision(this.animals[0], this.user);
+        console.table(distance);
       });
-
       /*
       window.addEventListener("mouseup", (e) => {
         this.user.positionX = e.offsetX;
@@ -109,16 +84,16 @@ window.addEventListener("load", function () {
     }
 
     // displays wether user (the mouse), is in the collision radius of the animal
-    checkCollision(animal: Animal, user: User) {
+    checkCollision(animal, user) {
       const dx = animal.centerX - user.positionX;
       const dy = animal.centerY - user.positionY;
-      const distance = Math.sqrt(dy ** 2 + dx ** 2);
-      // let animalX = animal.centerX;
-      // let animalY = animal.centerY;
-      // let userX = user.positionX;
-      // let userY = user.positionY;
-      let collided = distance <= animal.collisionRadius;
-      return collided;
+      const distance = Math.hypot(dy, dx);
+      let animalX = animal.centerX;
+      let animalY = animal.centerY;
+      let userX = user.positionX;
+      let userY = user.positionY;
+      //console.table({ animalX, animalY, userX, userY, dx, dy, distance });
+      return { animalX, animalY, userX, userY, dx, dy, distance };
     }
 
     // initializes animals
@@ -137,7 +112,7 @@ window.addEventListener("load", function () {
     }*/
 
     // calls updates and drawings of all elements
-    render(deltaTime: number) {
+    render(deltaTime) {
       // if a 120th of a second has passed
       if (this.timer > this.interval) {
         // update and draw elements
@@ -151,13 +126,7 @@ window.addEventListener("load", function () {
   }
 
   class Sprite {
-    loop: Loop;
-    animal: Animal;
-    internalY: number;
-    image: HTMLElement | null;
-    frameTimer: number;
-
-    constructor(loop: Loop, animal: Animal) {
+    constructor(loop, animal) {
       this.loop = loop;
       this.animal = animal;
 
@@ -184,31 +153,12 @@ window.addEventListener("load", function () {
 
     draw() {
       // set the image position through css
-      this.image!.setAttribute("style", `top: ${this.internalY}px;`);
+      this.image.style = `top: ${this.internalY}px;`;
     }
   }
 
   class Animal {
-    loop: Loop;
-    width: number;
-    height: number;
-    positionX: number;
-    positionY: number;
-    image: HTMLElement | null;
-    pointer: HTMLElement | null;
-    centerX: number;
-    centerY: number;
-    collisionRadius: number;
-    flipped: boolean;
-    spriteWidth: number;
-    spriteHeight: number;
-    sprite: Sprite;
-    speedX: number;
-    speedY: number;
-    spriteX: number;
-    spriteY: number;
-
-    constructor(loop: Loop, name?: string) {
+    constructor(loop, name) {
       this.loop = loop;
 
       // size of box delimiting the animal
@@ -230,7 +180,7 @@ window.addEventListener("load", function () {
       this.centerY = this.positionY + this.height / 2;
 
       // radius at which it counts an object in as a collision
-      this.collisionRadius = 100;
+      this.collisionRadius = 250;
 
       // false = looking right, true = looking left
       this.flipped = false;
@@ -250,12 +200,9 @@ window.addEventListener("load", function () {
       this.speedY = 0.75;
     }
     draw() {
-      this.image!.setAttribute(
-        "style",
-        `position: absolute; ${
-          this.flipped ? "transform: scaleX(-1);" : "" // if flipped transform otherwise pass
-        } top: ${this.positionY}px; left: ${this.positionX}px;`
-      ); // set location
+      this.image.style = `position: absolute; ${
+        this.flipped ? "transform: scaleX(-1);" : "" // if flipped transform otherwise pass
+      } top: ${this.positionY}px; left: ${this.positionX}px;`; // set location
 
       /* for future use in animation and behaviours
       let sx = this.step * this.spriteWidth; //x location is sprite sheet, represents state
@@ -266,10 +213,7 @@ window.addEventListener("load", function () {
       this.sprite.draw();
 
       // pointer for debugging
-      this.pointer!.setAttribute(
-        "style",
-        `top: ${this.centerY}px; left: ${this.centerX}px;`
-      );
+      this.pointer.style = `top: ${this.centerY}px; left: ${this.centerX}px;`;
     }
 
     update() {
@@ -311,7 +255,7 @@ window.addEventListener("load", function () {
   loop.init();
 
   let lastTime = 0;
-  function animate(timeStamp: number) {
+  function animate(timeStamp) {
     // for adjustment of fps
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
