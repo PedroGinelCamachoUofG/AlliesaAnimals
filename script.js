@@ -3,6 +3,9 @@ window.addEventListener("load", function () {
   // what if it is a phone wihtout buttons??
   // I need an if
 
+  // so we where looking to spawn particles or print something at least when the cat gets clicked
+  // issue is that the distance calculation was being super nonsensical
+
   class User {
     constructor(loop) {
       this.loop = loop;
