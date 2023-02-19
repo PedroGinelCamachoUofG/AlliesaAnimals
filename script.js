@@ -9,13 +9,17 @@ window.addEventListener("load", function () {
   class User {
     constructor(loop) {
       this.loop = loop;
+      // mouse position
       this.positionX;
       this.positionY;
-      this.pressed = false;
+      this.isPressed = false;
     }
 
+    // user doesn't have an update method, its values are updated on mouse press
+    // perhaps it is better idea to have an update method here and call it when on mouse press
+
     draw() {
-      if (this.pressed) {
+      if (this.isPressed) {
         // draw like some lines of baping or something
       }
     }
@@ -24,8 +28,8 @@ window.addEventListener("load", function () {
   class Particle {
     constructor(loop, x, y, name) {
       this.loop = loop;
-      this.collisionX = x;
-      this.collisionY = y;
+      this.positionX = x;
+      this.positionY = y;
       this.angle = 0;
       this.lifetime = 0;
       this.duration = 60;
@@ -47,20 +51,26 @@ window.addEventListener("load", function () {
 
   class Loop {
     constructor() {
+      // occupy all screen
       this.width = window.innerWidth;
       this.height = window.innerHeight;
+
+      // for coordinating frequency of updates
       this.fps = 120;
       this.timer = 0;
       this.interval = 1000 / this.fps; // time increase until it reaches interval and then you change animations
+
+      // variables
       this.user = new User(this);
       this.animals = [];
-      this.numberOfAnimals = 4;
+      this.numberOfAnimals = 1;
       this.particles = [];
 
+      // event listeners
       window.addEventListener("mousedown", (e) => {
         this.user.positionX = e.pageX;
         this.user.positionY = e.pageY;
-        this.user.pressed = true;
+        this.user.isPressed = true;
         let distance = this.checkCollision(this.animals[0], this.user);
         console.table(distance);
       });
@@ -73,6 +83,7 @@ window.addEventListener("load", function () {
       */
     }
 
+    // displays wether user (the mouse), is in the collision radius of the animal
     checkCollision(animal, user) {
       const dx = animal.centerX - user.positionX;
       const dy = animal.centerY - user.positionY;
@@ -85,20 +96,26 @@ window.addEventListener("load", function () {
       return { animalX, animalY, userX, userY, dx, dy, distance };
     }
 
+    // initializes animals
     init() {
       for (let i = 0; i < this.numberOfAnimals; i++) {
         this.animals.push(new Animal(this));
       }
     }
 
+    // removes objects
+    /*
     removeObject() {
       this.particles = this.particles.filter(
         (element) => element.duration > element.lifetime
       );
-    }
+    }*/
 
+    // calls updates and drawings of all elements
     render(deltaTime) {
+      // if a 120th of a second has passed
       if (this.timer > this.interval) {
+        // update and draw elements
         this.animals.forEach((element) => element.update());
         this.animals.forEach((element) => element.draw());
         this.user.draw(); // since I'm noy drwawing anything its kind of irrelevant
@@ -111,21 +128,31 @@ window.addEventListener("load", function () {
   class Sprite {
     constructor(loop, animal) {
       this.loop = loop;
-      this.internalY = 250;
       this.animal = animal;
+
+      // the Y position the sprite is displaced from the center
+      this.internalY = 250;
+
       this.image = document.getElementById("sprite");
+
+      // increased every frame, used to determine point in the movement
       this.frameTimer = 0;
     }
 
     update() {
+      // change increase amount to change speed of movement
       this.frameTimer += 2;
       if (this.frameTimer > 120) {
+        // reset to 0 after 1 sec
         this.frameTimer = 0;
       }
+      // set position to what the function says
+      // ((x - x_axis_offset) * steepness_of_curve) ** 2
       this.internalY = ((this.frameTimer - 60) * 0.1) ** 2;
     }
 
     draw() {
+      // set the image position through css
       this.image.style = `top: ${this.internalY}px;`;
     }
   }
@@ -133,42 +160,60 @@ window.addEventListener("load", function () {
   class Animal {
     constructor(loop, name) {
       this.loop = loop;
-      this.flipped = false;
+
+      // size of box delimiting the animal
       this.width = 250;
       this.height = 250;
+
+      // position of the animal, set to a random location within the screen
       this.positionX =
         Math.random() * (this.loop.width - this.width * 2) + this.width * 0.5;
       this.positionY =
         Math.random() * (this.loop.height - this.height * 2) +
         this.height * 0.5;
-      this.collisionRadius = 250;
+
       this.image = document.getElementById("animal-container"); // use name to distinguish between different animal files
       //document.getElementById("imageid").src="../template/save.png";e
       this.pointer = document.getElementById("pointer");
 
       this.centerX = this.positionX + this.width / 2;
       this.centerY = this.positionY + this.height / 2;
+
+      // radius at which it counts an object in as a collision
+      this.collisionRadius = 250;
+
+      // false = looking right, true = looking left
+      this.flipped = false;
+
+      // sprite size and init
       this.spriteWidth = 250;
       this.spriteHeight = 250;
       this.sprite = new Sprite(this.loop, this);
 
+      /* for future use in animation and behaviours
       this.state = 0; // state for changing animation
-      this.direction = 0; // 1 equal left, 2 equal right
       this.step = 0; // step of animation
+      */
 
+      // speed at which animal moves in each axis
       this.speedX = 2;
       this.speedY = 0.75;
     }
     draw() {
       this.image.style = `position: absolute; ${
-        this.flipped ? "transform: scaleX(-1);" : ""
-      } top: ${this.positionY}px; left: ${this.positionX}px;`;
+        this.flipped ? "transform: scaleX(-1);" : "" // if flipped transform otherwise pass
+      } top: ${this.positionY}px; left: ${this.positionX}px;`; // set location
+
+      /* for future use in animation and behaviours
       let sx = this.step * this.spriteWidth; //x location is sprite sheet, represents state
       let sy = this.state * this.direction * this.spriteHeight; //y location is sprite sheet, represents step
-      this.sprite.draw();
-      this.pointer.style = `top: ${this.centerY}px; left: ${this.centerX}px;`;
+      */
 
-      //context.drawImage(this.image, sx, sy, this.frameWidth, this.frameHeight, this.spriteX, this.spriteY, this.width, this.height);
+      // draw the sprite of the animal
+      this.sprite.draw();
+
+      // pointer for debugging
+      this.pointer.style = `top: ${this.centerY}px; left: ${this.centerX}px;`;
     }
 
     update() {
@@ -178,9 +223,11 @@ window.addEventListener("load", function () {
 
       this.centerX = this.positionX + this.width / 2;
       this.centerY = this.positionY + this.height / 2;
-      // update the locations of stuff
+
+      // update the locations of stuff MIGHT BE IRRELEVANT
       this.spriteX = this.positionX - this.width * 0.5;
       this.spriteY = this.positionY - this.height * 0.5;
+
       // update to keep them in the screen
       if (this.positionX < 0) {
         // outside left of screen
@@ -197,20 +244,29 @@ window.addEventListener("load", function () {
         // outsidde the bottom
         this.speedY = -this.speedY;
       }
+
+      // update animal sprite after animal location has been decided
       this.sprite.update();
     }
   }
 
+  // initiate the container class Loop
   const loop = new Loop();
   loop.init();
 
   let lastTime = 0;
   function animate(timeStamp) {
+    // for adjustment of fps
     const deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
+
+    // calls update and draw methods
     loop.render(deltaTime);
 
+    // calls itself to establish a loop
     window.requestAnimationFrame(animate);
   }
+
+  // start the loop at time 0
   animate(0);
 });
