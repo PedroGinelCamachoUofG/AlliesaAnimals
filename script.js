@@ -5,8 +5,8 @@ window.addEventListener('load', function(){
     const canvas =  this.document.getElementById('canvas1');
     const ctx = canvas.getContext('2d');
     // ??
-    canvas.width = 1000;
-    canvas.height = 700;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     class User {
         constructor(loop){
@@ -63,8 +63,8 @@ window.addEventListener('load', function(){
     class Loop {
         constructor(canvas){
             this.canvas = canvas;
-            this.width = this.canvas.width;
-            this.height = this.canvas.height;
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
             this.fps = 120;
             this.timer = 0;
             this.interval = 1000/this.fps;// time increase until it reaches interval and then you change animations
@@ -125,14 +125,16 @@ window.addEventListener('load', function(){
     class Animal {
         constructor(loop, name){
             this.loop = loop;
+            this.flipped = false;
             this.frameWidth = 250;//placeholder values
             this.frameHeight = 250;//placeholder values
             this.width = this.frameWidth;
             this.height = this.frameHeight;
-            this.collisionX =  (Math.random() * (this.loop.width - this.width) + this.width*0.5);
-            this.collisionY =  (Math.random() * (this.loop.height- this.height) + this.height*0.5);
+            this.collisionX =  (Math.random() * (this.loop.width - this.width*2) + this.width*0.5);
+            this.collisionY =  (Math.random() * (this.loop.height - this.height*2) + this.height*0.5);
             this.collisionRadius = 50;
             this.image =  document.getElementById('animals');// use name to distinguish between different animal files
+            //document.getElementById("imageid").src="../template/save.png";
             this.spriteX = this.collisionX - this.width * 0.5;
             this.spriteY = this.collisionY - this.height * 0.5;
             this.spriteWidth = 250;
@@ -147,9 +149,11 @@ window.addEventListener('load', function(){
 
         }
         draw(context){
+            this.image.style = `position: absolute; ${this.flipped ? "transform: scaleX(-1);" : ""} top: ${this.collisionY}px; left: ${this.collisionX}px;`;
             let sx = this.step * this.spriteWidth;//x location is sprite sheet, represents state
             let sy = this.state * this.direction * this.spriteHeight;//y location is sprite sheet, represents step
-            context.drawImage(this.image, sx, sy, this.frameWidth, this.frameHeight, this.spriteX, this.spriteY, this.width, this.height);
+
+            //context.drawImage(this.image, sx, sy, this.frameWidth, this.frameHeight, this.spriteX, this.spriteY, this.width, this.height);
         }
 
         update(){
@@ -160,19 +164,22 @@ window.addEventListener('load', function(){
             this.spriteX =  this.collisionX - this.width * 0.5;
             this.spriteY =  this.collisionY - this.height * 0.5;
             // update to keep them in the screen 
-            if (this.collisionX - this.width * 0.5 < 0){
+            if (this.collisionX < 0){
                 // outside left of screen
                 this.speedX = -this.speedX;
-            } else if (this.collisionX + this.width * 0.5 > this.loop.width){
+                this.flipped = !this.flipped;
+            } else if (this.collisionX + this.width + 10 > this.loop.width){
                 // outside the right
                 this.speedX = -this.speedX;
-            } else if (this.collisionY + this.height * 0.5 > this.loop.height){
+                this.flipped = !this.flipped;
+            } else if (this.collisionY + this.height + 10 > this.loop.height){
                 // outside the top
                 this.speedY = -this.speedY;
-            } else if (this.collisionY - this.height * 0.5 < 0){
+            } else if (this.collisionY < 0){
                 // outsidde the bottom
                 this.speedY = -this.speedY;
             }
+            console.log(this.collisionX + ", " + this.collisionY);
         }
     }
 

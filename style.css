@@ -1,8 +1,12 @@
 #animals {
-    display: none;
+    position: absolute;
 }
 
 #canvas1 {
-    background-color: blue;
+    display: none;
 
+}
+
+body{
+    background-color: burlywood;
 }
