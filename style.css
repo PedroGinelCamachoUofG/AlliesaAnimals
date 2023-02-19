@@ -1,12 +1,24 @@
-#animals {
+#animal-container {
+    height: 250px;
+    width: 250px;
     position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: blueviolet;
 }
-
-#canvas1 {
-    display: none;
-
+#pointer{
+    position: absolute;
+    transform-origin: center;
+    
 }
 
 body{
     background-color: burlywood;
+}
+
+#sprite{
+    aspect-ratio: initial;
+    position: absolute;
+    width: 75%;
 }
