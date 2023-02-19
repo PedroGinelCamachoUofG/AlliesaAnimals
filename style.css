@@ -5,16 +5,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: blueviolet;
 }
 #pointer{
     position: absolute;
     transform-origin: center;
+    display: none;
     
 }
 
 body{
-    background-color: burlywood;
+    background-color: lightgray;
 }
 
 #sprite{
