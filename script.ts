@@ -40,26 +40,38 @@ window.addEventListener("load", function () {
     image: HTMLElement | null;
     size: number;
 
-    constructor(loop: Loop, x: number, y: number, name: string) {
+    constructor(loop: Loop, x: number, y: number) {
       this.loop = loop;
       this.positionX = x;
       this.positionY = y;
       this.angle = 0;
-      this.lifetime = 0;
-      this.duration = 60;
-      this.image = document.getElementById("bap"); // use name
-      this.size = 10;
+      this.lifetime = 60;
+      this.duration = 0;
+      this.size = 10;// do I want to change its size or make it random??
     }
 
     draw() {
       //context.drawImage(this.image, this.collisionX, this.collisionY, this.size * Math.random() + 5, this.size * Math.random() + 5);
     }
+
+    update(){
+      this.duration += 1;
+    }
   }
 
   class Bap extends Particle {
+
+    constructor(loop: Loop, x: number, y: number, name: string){
+      super(loop, x, y);
+      this.image = document.getElementById(name);
+      // set the image position through css
+      //this.image!.setAttribute("style", `opacity: 1; display: block; top: ${this.positionY}px; left: ${this.positionX}px;`);
+    }
+
     update() {
-      //display movement
-      // expand at a slight off angle
+      super.update();
+      this.image!.setAttribute("style", `opacity: ${(this.lifetime-this.duration)/this.lifetime}; top: ${this.positionY}px; left: ${this.positionX}px;`);
+      //change position and shape of the sprite
     }
   }
 
@@ -76,11 +88,6 @@ window.addEventListener("load", function () {
 
     constructor() {
       // occupy all screen
-      /**There is a problem with this where if you resize the screen the cat is set to the bounds of the old page
-       * So it will bounce outside the old page. However, if you update the bounds, then when you resize the screen
-       * The cat will get stuck flipping constantly if it is caught outside the size of the screen
-       * So I think the best solution for this is a method that restarts everything if the screen is
-       */
       this.width = document.body.scrollWidth;
       this.height = document.body.scrollHeight;
 
@@ -101,7 +108,10 @@ window.addEventListener("load", function () {
         this.user.positionY = e.pageY;
         this.user.isPressed = true;
         let collided = this.checkCollision(this.animals[0], this.user);
-        console.table(collided);
+        if (collided) {
+          this.particles.push(new Bap(this, this.user.positionX, this.user.positionY, "bap"));
+        }
+        //console.table(collided);
       });
 
       /*
@@ -134,12 +144,17 @@ window.addEventListener("load", function () {
     }
 
     // removes objects
-    /*
     removeObject() {
+      this.particles.forEach(element => {
+        if (element.duration == element.lifetime){
+          console.log("particle died");
+          element.image!.setAttribute("style", `display: none;`);
+        }
+      });
       this.particles = this.particles.filter(
-        (element) => element.duration > element.lifetime
+        (element) => element.duration < element.lifetime
       );
-    }*/
+    }
 
     // calls updates and drawings of all elements
     render(deltaTime: number) {
@@ -148,6 +163,9 @@ window.addEventListener("load", function () {
         // update and draw elements
         this.animals.forEach((element) => element.update());
         this.animals.forEach((element) => element.draw());
+        this.particles.forEach((element) => element.update());// remove the particles at some point
+        this.particles.forEach((element) => element.draw());
+        this.removeObject();
         this.user.draw(); // since I'm noy drwawing anything its kind of irrelevant
         this.timer = 0;
       }
@@ -229,7 +247,7 @@ window.addEventListener("load", function () {
 
       this.image = document.getElementById("animal-container"); // use name to distinguish between different animal files
       //document.getElementById("imageid").src="../template/save.png";e
-      this.pointer = document.getElementById("pointer");
+      //this.pointer = document.getElementById("pointer");
 
       this.centerX = this.positionX + this.width / 2;
       this.centerY = this.positionY + this.height / 2;
@@ -271,10 +289,12 @@ window.addEventListener("load", function () {
       this.sprite.draw();
 
       // pointer for debugging
+      /*
       this.pointer!.setAttribute(
         "style",
         `top: ${this.centerY}px; left: ${this.centerX}px;`
       );
+      */
     }
 
     update() {

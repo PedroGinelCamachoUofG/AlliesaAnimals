@@ -37,29 +37,36 @@ window.addEventListener("load", function () {
         return User;
     }());
     var Particle = /** @class */ (function () {
-        function Particle(loop, x, y, name) {
+        function Particle(loop, x, y) {
             this.loop = loop;
             this.positionX = x;
             this.positionY = y;
             this.angle = 0;
-            this.lifetime = 0;
-            this.duration = 60;
-            this.image = document.getElementById("bap"); // use name
-            this.size = 10;
+            this.lifetime = 60;
+            this.duration = 0;
+            this.size = 10; // do I want to change its size or make it random??
         }
         Particle.prototype.draw = function () {
             //context.drawImage(this.image, this.collisionX, this.collisionY, this.size * Math.random() + 5, this.size * Math.random() + 5);
+        };
+        Particle.prototype.update = function () {
+            this.duration += 1;
         };
         return Particle;
     }());
     var Bap = /** @class */ (function (_super) {
         __extends(Bap, _super);
-        function Bap() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function Bap(loop, x, y, name) {
+            var _this = _super.call(this, loop, x, y) || this;
+            _this.image = document.getElementById(name);
+            return _this;
+            // set the image position through css
+            //this.image!.setAttribute("style", `opacity: 1; display: block; top: ${this.positionY}px; left: ${this.positionX}px;`);
         }
         Bap.prototype.update = function () {
-            //display movement
-            // expand at a slight off angle
+            _super.prototype.update.call(this);
+            this.image.setAttribute("style", "opacity: ".concat((this.lifetime - this.duration) / this.lifetime, "; top: ").concat(this.positionY, "px; left: ").concat(this.positionX, "px;"));
+            //change position and shape of the sprite
         };
         return Bap;
     }(Particle));
@@ -67,11 +74,6 @@ window.addEventListener("load", function () {
         function Loop() {
             var _this = this;
             // occupy all screen
-            /**There is a problem with this where if you resize the screen the cat is set to the bounds of the old page
-             * So it will bounce outside the old page. However, if you update the bounds, then when you resize the screen
-             * The cat will get stuck flipping constantly if it is caught outside the size of the screen
-             * So I think the best solution for this is a method that restarts everything if the screen is
-             */
             this.width = document.body.scrollWidth;
             this.height = document.body.scrollHeight;
             // for coordinating frequency of updates
@@ -89,7 +91,10 @@ window.addEventListener("load", function () {
                 _this.user.positionY = e.pageY;
                 _this.user.isPressed = true;
                 var collided = _this.checkCollision(_this.animals[0], _this.user);
-                console.table(collided);
+                if (collided) {
+                    _this.particles.push(new Bap(_this, _this.user.positionX, _this.user.positionY, "bap"));
+                }
+                //console.table(collided);
             });
             /*
             window.addEventListener("mouseup", (e) => {
@@ -118,12 +123,15 @@ window.addEventListener("load", function () {
             }
         };
         // removes objects
-        /*
-        removeObject() {
-          this.particles = this.particles.filter(
-            (element) => element.duration > element.lifetime
-          );
-        }*/
+        Loop.prototype.removeObject = function () {
+            this.particles.forEach(function (element) {
+                if (element.duration == element.lifetime) {
+                    console.log("particle died");
+                    element.image.setAttribute("style", "display: none;");
+                }
+            });
+            this.particles = this.particles.filter(function (element) { return element.duration < element.lifetime; });
+        };
         // calls updates and drawings of all elements
         Loop.prototype.render = function (deltaTime) {
             // if a 120th of a second has passed
@@ -131,6 +139,9 @@ window.addEventListener("load", function () {
                 // update and draw elements
                 this.animals.forEach(function (element) { return element.update(); });
                 this.animals.forEach(function (element) { return element.draw(); });
+                this.particles.forEach(function (element) { return element.update(); }); // remove the particles at some point
+                this.particles.forEach(function (element) { return element.draw(); });
+                this.removeObject();
                 this.user.draw(); // since I'm noy drwawing anything its kind of irrelevant
                 this.timer = 0;
             }
@@ -179,7 +190,7 @@ window.addEventListener("load", function () {
                     this.height * 0.5;
             this.image = document.getElementById("animal-container"); // use name to distinguish between different animal files
             //document.getElementById("imageid").src="../template/save.png";e
-            this.pointer = document.getElementById("pointer");
+            //this.pointer = document.getElementById("pointer");
             this.centerX = this.positionX + this.width / 2;
             this.centerY = this.positionY + this.height / 2;
             // radius at which it counts an object in as a collision
@@ -208,7 +219,12 @@ window.addEventListener("load", function () {
             // draw the sprite of the animal
             this.sprite.draw();
             // pointer for debugging
-            this.pointer.setAttribute("style", "top: ".concat(this.centerY, "px; left: ").concat(this.centerX, "px;"));
+            /*
+            this.pointer!.setAttribute(
+              "style",
+              `top: ${this.centerY}px; left: ${this.centerX}px;`
+            );
+            */
         };
         Animal.prototype.update = function () {
             // make it move
