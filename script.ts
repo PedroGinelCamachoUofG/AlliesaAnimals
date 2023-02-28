@@ -76,8 +76,13 @@ window.addEventListener("load", function () {
 
     constructor() {
       // occupy all screen
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
+      /**There is a problem with this where if you resize the screen the cat is set to the bounds of the old page
+       * So it will bounce outside the old page. However, if you update the bounds, then when you resize the screen
+       * The cat will get stuck flipping constantly if it is caught outside the size of the screen
+       * So I think the best solution for this is a method that restarts everything if the screen is
+       */
+      this.width = document.body.scrollWidth;
+      this.height = document.body.scrollHeight;
 
       // for coordinating frequency of updates
       this.fps = 120;
@@ -307,8 +312,15 @@ window.addEventListener("load", function () {
   }
 
   // initiate the container class Loop
-  const loop = new Loop();
+  let loop = new Loop();
   loop.init();
+
+  window.addEventListener('resize', function(event) {
+    loop = new Loop();
+    loop.init();
+    let lastTime = 0;
+    animate(0);
+  }, true);
 
   let lastTime = 0;
   function animate(timeStamp: number) {
