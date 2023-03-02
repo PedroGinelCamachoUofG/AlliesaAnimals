@@ -63,6 +63,7 @@ window.addEventListener("load", function () {
 
     constructor(loop: Loop, x: number, y: number, name: string){
       super(loop, x, y);
+      // https://stackoverflow.com/questions/54507050/adding-several-lines-of-html-to-page-using-javascript
       this.image = document.getElementById(name);
       // set the image position through css
       //this.image!.setAttribute("style", `opacity: 1; display: block; top: ${this.positionY}px; left: ${this.positionX}px;`);
