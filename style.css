@@ -7,12 +7,14 @@
   align-items: center;
   /* background-color: blueviolet; */
 }
-#bap{
+.bap{
     position: absolute;
     transform-origin: center;
     height: 25px;
     width: 50px;
     display: block;    
+    overflow: visible;
+    z-index: 1;
 }
 
 

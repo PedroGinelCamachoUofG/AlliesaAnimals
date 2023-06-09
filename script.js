@@ -17,8 +17,6 @@ window.addEventListener("load", function () {
     // https://www.youtube.com/watch?v=U34l-Xz5ynU&ab_channel=freeCodeCamp.org
     // what if it is a phone wihtout buttons??
     // I need an if
-    // so we where looking to spawn particles or print something at least when the cat gets clicked
-    // issue is that the distance calculation was being super nonsensical
     var User = /** @class */ (function () {
         function User(loop) {
             this.loop = loop;
@@ -31,7 +29,7 @@ window.addEventListener("load", function () {
         // perhaps it is better idea to have an update method here and call it when on mouse press
         User.prototype.draw = function () {
             if (this.isPressed) {
-                // draw like some lines of baping or something
+                // so this will run every time the mouse is pressed regardless of wether it is on the pet
             }
         };
         return User;
@@ -45,6 +43,7 @@ window.addEventListener("load", function () {
             this.lifetime = 60;
             this.duration = 0;
             this.size = 10; // do I want to change its size or make it random??
+            this.id = "prtcl".concat(Bap.counter++);
         }
         Particle.prototype.draw = function () {
             //context.drawImage(this.image, this.collisionX, this.collisionY, this.size * Math.random() + 5, this.size * Math.random() + 5);
@@ -52,16 +51,23 @@ window.addEventListener("load", function () {
         Particle.prototype.update = function () {
             this.duration += 1;
         };
+        Particle.counter = 0;
         return Particle;
     }());
     var Bap = /** @class */ (function (_super) {
         __extends(Bap, _super);
         function Bap(loop, x, y, name) {
             var _this = _super.call(this, loop, x, y) || this;
-            _this.image = document.getElementById(name);
-            return _this;
+            var temp = document.createElement('div');
+            temp.setAttribute("id", "".concat(_this.id));
+            temp.innerHTML = "<img class=\"bap\" id=\"bap".concat(_this.id, "\"src=\"./assets/bap.png\" />");
+            var frag = document.createDocumentFragment().appendChild(temp);
+            document.body.insertBefore(frag, document.body.childNodes[0]);
+            console.log("bap created");
             // set the image position through css
-            //this.image!.setAttribute("style", `opacity: 1; display: block; top: ${this.positionY}px; left: ${this.positionX}px;`);
+            _this.image = document.getElementById("bap".concat(_this.id));
+            _this.image.setAttribute("style", "opacity: 1; display: block; top: ".concat(_this.positionY, "px; left: ").concat(_this.positionX, "px;"));
+            return _this;
         }
         Bap.prototype.update = function () {
             _super.prototype.update.call(this);
@@ -127,6 +133,8 @@ window.addEventListener("load", function () {
             this.particles.forEach(function (element) {
                 if (element.duration == element.lifetime) {
                     console.log("particle died");
+                    var elt = document.getElementById(element.id);
+                    elt.remove();
                     element.image.setAttribute("style", "display: none;");
                 }
             });
