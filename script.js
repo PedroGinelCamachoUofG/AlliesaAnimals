@@ -307,12 +307,12 @@ window.addEventListener("load", function () {
                 this.speedX = -this.speedX;
                 this.flipped = !this.flipped;
             }
-            else if (this.positionX + this.width + 10 > this.loop.width) {
+            else if (this.positionX + this.width + 35 > this.loop.width) {
                 // outside the right
                 this.speedX = -this.speedX;
                 this.flipped = !this.flipped;
             }
-            else if (this.positionY + this.height + 10 > this.loop.height) {
+            else if (this.positionY + this.height + 30 > this.loop.height) {
                 // outside the top
                 this.speedY = -this.speedY;
             }
