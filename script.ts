@@ -117,6 +117,7 @@ window.addEventListener("load", function () {
         let collided = this.checkCollision(this.animals[0], this.user);
         if (collided) {
           this.particles.push(new Bap(this, this.user.positionX, this.user.positionY, "bap"));
+          this.animals[0].changeSate();
         }
         //console.table(collided);
       });
@@ -175,7 +176,7 @@ window.addEventListener("load", function () {
         this.particles.forEach((element) => element.update());// remove the particles at some point
         this.particles.forEach((element) => element.draw());
         this.removeObject();
-        this.user.draw(); // since I'm noy drwawing anything its kind of irrelevant
+        // this.user.draw(); // since I'm noy drwawing anything its kind of irrelevant
         this.timer = 0;
       }
       this.timer += deltaTime;
@@ -194,7 +195,7 @@ window.addEventListener("load", function () {
       this.animal = animal;
 
       // the Y position the sprite is displaced from the center
-      this.internalY = 250;
+      this.internalY = 0;
 
       this.image = document.getElementById("sprite");
 
@@ -203,6 +204,7 @@ window.addEventListener("load", function () {
     }
 
     update() {
+      /*
       // change increase amount to change speed of movement
       this.frameTimer += 2;
       if (this.frameTimer > 120) {
@@ -212,6 +214,7 @@ window.addEventListener("load", function () {
       // set position to what the function says
       // ((x - x_axis_offset) * steepness_of_curve) ** 2
       this.internalY = ((this.frameTimer - 60) * 0.1) ** 2;
+      */
     }
 
     draw() {
@@ -239,13 +242,16 @@ window.addEventListener("load", function () {
     speedY: number;
     spriteX: number;
     spriteY: number;
+    // there are 4 states: pace (0), run (1), idle (2), and sleep (3)
+    state: number;
+    stateCounter: number;
 
     constructor(loop: Loop, name?: string) {
       this.loop = loop;
 
       // size of box delimiting the animal
-      this.width = 250;
-      this.height = 250;
+      this.width = 40;
+      this.height = 40;
 
       // position of the animal, set to a random location within the screen
       this.positionX =
@@ -262,12 +268,12 @@ window.addEventListener("load", function () {
       this.centerY = this.positionY + this.height / 2;
 
       // radius at which it counts an object in as a collision
-      this.collisionRadius = 100;
+      this.collisionRadius = 50;
 
       // false = looking right, true = looking left
       this.flipped = false;
 
-      // sprite size and init
+      // sprite size (never used) and init
       this.spriteWidth = 250;
       this.spriteHeight = 250;
       this.sprite = new Sprite(this.loop, this);
@@ -280,6 +286,52 @@ window.addEventListener("load", function () {
       // speed at which animal moves in each axis
       this.speedX = 2;
       this.speedY = 0.75;
+
+      // controls when the state changes
+      this.stateCounter = 0;
+    }
+    changeSate() {
+      var choice = Math.floor(Math.random() * 4);
+      this.stateCounter = 0;
+      if (choice == 0) {// pace
+        this.state = 0;
+        console.log("pacing");
+        // change the animation
+        this.sprite.image!.setAttribute("src", "./assets/bwh.gif");
+        //this.image!.setAttribute("srcset", "./assets/bwh.gif");
+
+        if (this.flipped) {
+          this.speedX = -2;
+        } else {
+          this.speedX = 2;
+        }
+        this.speedY = 0.75;
+      } else if (choice == 1) {// run
+        this.state = 1;
+        console.log("running");
+        // change the animation
+        this.sprite.image!.setAttribute("src", "./assets/brh.gif");
+        //this.image!.setAttribute("srcset", "./assets/brh.gif");
+
+        if (this.flipped) {
+          this.speedX = -4;
+        } else {
+          this.speedX = 4;
+        }
+        this.speedY = 1.25;
+      } else if (choice == 2) {// idle
+        console.log("idle");
+        this.state = 2;
+        this.sprite.image!.setAttribute("src", "./assets/bsh.gif");
+        this.speedX = 0;
+        this.speedY = 0;
+      } else if (choice == 3){// sleep
+        console.log("sleeping");
+        this.state = 3;
+        this.sprite.image!.setAttribute("src", "./assets/bs.gif");
+        this.speedX = 0;
+        this.speedY = 0;
+      }
     }
     draw() {
       this.image!.setAttribute(
@@ -307,6 +359,13 @@ window.addEventListener("load", function () {
     }
 
     update() {
+      // change state randomly state
+      if (this.stateCounter > 500 + Math.random() * 500) {
+        this.changeSate();
+      } else {
+        this.stateCounter++;
+      }
+
       // make it move
       this.positionX += this.speedX;
       this.positionY += this.speedY;

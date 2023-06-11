@@ -1,10 +1,11 @@
 #animal-container {
-  height: 250px;
-  width: 250px;
+  height: 70px;
+  width: 70px;
   position: absolute;
   display: flex;
   justify-content: center;
   align-items: center;
+  border-width: 2px;
   /* background-color: blueviolet; */
 }
 .bap{
