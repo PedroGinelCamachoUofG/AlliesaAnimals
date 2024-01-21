@@ -217,7 +217,7 @@ window.addEventListener("load", function () {
             this.step = 0; // step of animation
             */
             // speed at which animal moves in each axis
-            this.speedX = 2;
+            this.speedX = 1;
             this.speedY = 0.75;
             // controls when the state changes
             this.stateCounter = 0;
@@ -232,10 +232,10 @@ window.addEventListener("load", function () {
                 this.sprite.image.setAttribute("src", "./assets/bwh.gif");
                 //this.image!.setAttribute("srcset", "./assets/bwh.gif");
                 if (this.flipped) {
-                    this.speedX = -2;
+                    this.speedX = -1;
                 }
                 else {
-                    this.speedX = 2;
+                    this.speedX = 1;
                 }
                 this.speedY = 0.75;
             }
@@ -246,10 +246,10 @@ window.addEventListener("load", function () {
                 this.sprite.image.setAttribute("src", "./assets/brh.gif");
                 //this.image!.setAttribute("srcset", "./assets/brh.gif");
                 if (this.flipped) {
-                    this.speedX = -4;
+                    this.speedX = -2;
                 }
                 else {
-                    this.speedX = 4;
+                    this.speedX = 2;
                 }
                 this.speedY = 1.25;
             }

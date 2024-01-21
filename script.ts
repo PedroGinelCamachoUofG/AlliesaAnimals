@@ -117,18 +117,10 @@ window.addEventListener("load", function () {
         let collided = this.checkCollision(this.animals[0], this.user);
         if (collided) {
           this.particles.push(new Bap(this, this.user.positionX, this.user.positionY, "bap"));
-          this.animals[0].changeSate();
+          this.animals[0].brain.bapped;
         }
         //console.table(collided);
       });
-
-      /*
-      window.addEventListener("mouseup", (e) => {
-        this.user.positionX = e.offsetX;
-        this.user.positionY = e.offsetY;
-        this.mouse.pressed = false;
-      });
-      */
     }
 
     // displays wether user (the mouse), is in the collision radius of the animal
@@ -235,6 +227,7 @@ window.addEventListener("load", function () {
     centerY: number;
     collisionRadius: number;
     flipped: boolean;
+    goingUp: boolean;
     spriteWidth: number;
     spriteHeight: number;
     sprite: Sprite;
@@ -245,6 +238,8 @@ window.addEventListener("load", function () {
     // there are 4 states: pace (0), run (1), idle (2), and sleep (3)
     state: number;
     stateCounter: number;
+    nextChangeModifier: number;
+    brain: Brain;
 
     constructor(loop: Loop, name?: string) {
       this.loop = loop;
@@ -273,26 +268,52 @@ window.addEventListener("load", function () {
       // false = looking right, true = looking left
       this.flipped = false;
 
+      // false = going down, true = going up
+      this.goingUp = false;
+
       // sprite size (never used) and init
       this.spriteWidth = 250;
       this.spriteHeight = 250;
       this.sprite = new Sprite(this.loop, this);
 
-      /* for future use in animation and behaviours
-      this.state = 0; // state for changing animation
-      this.step = 0; // step of animation
-      */
-
       // speed at which animal moves in each axis
-      this.speedX = 2;
-      this.speedY = 0.75;
+      this.speedX = 1;
+      this.speedY = -0.75;
+
+      // the initial state is pacing
+      this.state = 0;
 
       // controls when the state changes
       this.stateCounter = 0;
+
+      // controls how long the animal stays in a state
+      this.nextChangeModifier = Math.random() * 500;
+
+      this.brain = new Brain(this);
+
     }
-    changeSate() {
-      var choice = Math.floor(Math.random() * 4);
+
+    changeSate(choice: number, direction: number) {
+      // choices are 0: pace, 1: run, 2: idle, 3: sleep
+      // directions are 0: left-up, 1: right-up, 2: left-down, 3: right-down
+
       this.stateCounter = 0;
+
+      if (direction == 0 || direction == 2)  {
+        console.log("left");
+        this.flipped = true;
+      } else {
+        console.log("right");
+        this.flipped = false;
+      }
+      if (direction == 0 || direction == 1) {
+        console.log("up");
+        this.goingUp = true;
+      } else {
+        console.log("down");
+        this.goingUp = false;
+      }
+
       if (choice == 0) {// pace
         this.state = 0;
         console.log("pacing");
@@ -301,11 +322,16 @@ window.addEventListener("load", function () {
         //this.image!.setAttribute("srcset", "./assets/bwh.gif");
 
         if (this.flipped) {
-          this.speedX = -2;
+          this.speedX = -1;
         } else {
-          this.speedX = 2;
+          this.speedX = 1;
         }
-        this.speedY = 0.75;
+        if (this.goingUp) {
+          this.speedY = -0.75;
+        } else {
+          this.speedY = 0.75;
+        }
+
       } else if (choice == 1) {// run
         this.state = 1;
         console.log("running");
@@ -314,11 +340,16 @@ window.addEventListener("load", function () {
         //this.image!.setAttribute("srcset", "./assets/brh.gif");
 
         if (this.flipped) {
-          this.speedX = -4;
+          this.speedX = -2;
         } else {
-          this.speedX = 4;
+          this.speedX = 2;
         }
-        this.speedY = 1.25;
+        if (this.goingUp) {
+          this.speedY = -1.25;
+        } else {
+          this.speedY = 1.25;
+        }
+
       } else if (choice == 2) {// idle
         console.log("idle");
         this.state = 2;
@@ -333,6 +364,20 @@ window.addEventListener("load", function () {
         this.speedY = 0;
       }
     }
+
+    triggerChangeState(version: number) {
+      if (version == 0){ // random
+        this.changeSate(Math.floor(Math.random() * 4), Math.floor(Math.random() * 4));
+        return;
+      }
+      // using brain
+      // first lets memorize the current state
+      this.brain.memorize(this.state, this.flipped, this.goingUp);
+      // now we learn again
+      this.brain.learn()
+      // and now we make a choice
+    }
+
     draw() {
       this.image!.setAttribute(
         "style",
@@ -340,11 +385,6 @@ window.addEventListener("load", function () {
           this.flipped ? "transform: scaleX(-1);" : "" // if flipped transform otherwise pass
         } top: ${this.positionY}px; left: ${this.positionX}px;`
       ); // set location
-
-      /* for future use in animation and behaviours
-      let sx = this.step * this.spriteWidth; //x location is sprite sheet, represents state
-      let sy = this.state * this.direction * this.spriteHeight; //y location is sprite sheet, represents step
-      */
 
       // draw the sprite of the animal
       this.sprite.draw();
@@ -360,8 +400,9 @@ window.addEventListener("load", function () {
 
     update() {
       // change state randomly state
-      if (this.stateCounter > 500 + Math.random() * 500) {
-        this.changeSate();
+      if (this.stateCounter > 500 + this.nextChangeModifier) {
+        this.triggerChangeState(0); // change to 1 for brain
+        this.nextChangeModifier = Math.random() * 500;
       } else {
         this.stateCounter++;
       }
@@ -396,6 +437,49 @@ window.addEventListener("load", function () {
 
       // update animal sprite after animal location has been decided
       this.sprite.update();
+    }
+  }
+
+  class Brain{
+    net: any;
+    animal: Animal;
+    baps: number;
+    bapThreshold: number;
+    memory: any[]; // CHANGE THIS TO ITS ACTUAL TYPE WHICH IS A DICTIONARY OF SORTS
+    batchSize: number;
+
+    constructor(animal: Animal){
+      this.net = new brain.NeuralNetwork({ hiddenLayers: [3] });
+      this.animal = animal;
+
+      this.bapThreshold = 30;
+      this.baps = 0;
+
+      this.memory = [];
+      this.batchSize = 10;
+    }
+
+    bapped(){ 
+      this.baps++;
+      if (this.baps > this.bapThreshold)  {
+        this.animal.triggerChangeState(1);
+      }
+    }
+
+    memorize(state: number, flipped: boolean, goingUp: boolean){
+      this.memory.push({input: [state, flipped, goingUp], output: [this.baps]});
+      if (this.memory.length > this.batchSize){
+        this.memory.shift
+      }
+      this.baps = 0;
+    }
+
+    learn(){
+      this.net.train(this.memory);
+    }
+
+    predict(){
+  
     }
   }
 
